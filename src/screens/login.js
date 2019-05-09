@@ -1,35 +1,49 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-import { Button, Input } from 'react-native-elements';
-
+import { Button } from 'react-native-elements';
+import { LoginInput } from '../components/login-input';
 
 export default class Login extends React.Component {
 
-  submitLogin(event) {
-    console.log(event);
-    const uri = "https://frontend-test.agendaedu.com/api/login";
-    const requestInfo = {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: this.state.email,
-        password: this.state.password
-      }),
-    };
+  constructor(props) {
+    super(props);
+    this.state = {
+      email: '',
+      password: '',
+      validateForm: false,
+      waiting: false
+    }
+  } 
 
-    fetch(uri, requestInfo)
-      .then(response => {
-        if(response.ok) 
-          return response.json();
-        
-        throw new Error("Não foi possível efetuar login")
-      })
-      .then(token => console.warn(token.token))
+  submitLogin() {
+
+    if (this.state.email.trim() == '' || this.state.password.trim() == '') {
+      this.setState({validateForm: true});
+    } else {
+      this.setState({waiting: true});
+      const uri = "https://frontend-test.agendaedu.com/api/login";
+      const requestInfo = {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: this.state.email,
+          password: this.state.password
+        }),
+      };
+
+      fetch(uri, requestInfo)
+        .then(response => {
+          this.setState({waiting: false});
+          if(response.ok) 
+            return response.json();
+          throw new Error("Não foi possível efetuar login")
+        })
+        .then(token => console.warn(token.token))
+    }
+
   }
 
   render() {
@@ -42,39 +56,27 @@ export default class Login extends React.Component {
         </View>
 
         <View  style={styles.viewForm}>
-          <Input
+          <LoginInput
             label='E-mail ou usuário'
-            labelStyle={styles.label}
-            inputContainerStyle={styles.input}
-            rightIcon={
-              <Icon
-                name='envelope'
-                size={24}
-                color='#bfc4c8'
-              />
-            }
-            onChangeText={text => this.setState({email: text})}>
-          </Input>
-          <Input 
+            icon='envelope'
+            editable={this.state.waiting}
+            onChangeText={text => this.setState({email: text})}
+            danger={this.state.validateForm && this.state.email.trim() === ''}>
+          </LoginInput>
+          <LoginInput 
             label='Senha'
-            labelStyle={styles.label}
-            inputContainerStyle={styles.input}
-            secureTextEntry={true} 
-            rightIcon={
-              <Icon
-                name='eye-slash'
-                size={24}
-                color='#bfc4c8'
-              />
-            }
-            onChangeText={text => this.setState({password: text})}>
-          </Input>
+            icon='eye-slash'
+            secureTextEntry={true}
+            onChangeText={text => this.setState({password: text})}
+            danger={this.state.validateForm && this.state.password.trim() === ''}>
+          </LoginInput>
         </View>
 
         <View  style={styles.viewButton}>
           <Button
             buttonStyle={styles.buttonEntrar}
             title="Entrar"
+            loading={this.state.waiting}
             onPress={(e) => this.submitLogin(e)}
           />
         </View>
@@ -102,20 +104,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 10,
   },
-  label: {
-    color: '#7d7d7d',
-    marginBottom: 5,
-    fontWeight: '300',
-    fontSize: 16
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 4,
-    borderColor: '#bfc4c8',
-    height: 50,
-    marginBottom: 5,
-    padding: 5,
-  },  
   viewButton: {
     flex: 1,
     justifyContent: 'flex-end',
