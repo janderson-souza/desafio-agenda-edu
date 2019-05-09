@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, AsyncStorage } from 'react-native';
 import { Button } from 'react-native-elements';
 import { LoginInput } from '../components/login-input';
 
@@ -11,39 +11,29 @@ export default class Login extends React.Component {
       email: '',
       password: '',
       validateForm: false,
-      waiting: false
+      waiting: false,
     }
-  } 
+  }
 
   submitLogin() {
-
     if (this.state.email.trim() == '' || this.state.password.trim() == '') {
       this.setState({validateForm: true});
     } else {
       this.setState({waiting: true});
-      const uri = "https://frontend-test.agendaedu.com/api/login";
-      const requestInfo = {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: this.state.email,
-          password: this.state.password
-        }),
-      };
-
-      fetch(uri, requestInfo)
-        .then(response => {
-          this.setState({waiting: false});
-          if(response.ok) 
-            return response.json();
-          throw new Error("Não foi possível efetuar login")
-        })
-        .then(token => console.warn(token.token))
+      fetch(this.getUri(), this.getRequestInfo()).then(response => {
+        this.setState({waiting: false});
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Não foi possível efetuar login")
+      }).then(token => {
+        AsyncStorage.setItem('token', token.token);
+        const {navigate} = this.props.navigation;
+        navigate('Events');
+      }).catch(err => {
+        console.warn(err);
+      });
     }
-
   }
 
   render() {
@@ -54,7 +44,6 @@ export default class Login extends React.Component {
             {'Faça seu login 🔑'}
           </Text>
         </View>
-
         <View  style={styles.viewForm}>
           <LoginInput
             label='E-mail ou usuário'
@@ -71,7 +60,6 @@ export default class Login extends React.Component {
             danger={this.state.validateForm && this.state.password.trim() === ''}>
           </LoginInput>
         </View>
-
         <View  style={styles.viewButton}>
           <Button
             buttonStyle={styles.buttonEntrar}
@@ -82,6 +70,24 @@ export default class Login extends React.Component {
         </View>
       </View>
     );
+  }
+
+  getUri() {
+    return "https://frontend-test.agendaedu.com/api/login";
+  }
+
+  getRequestInfo() {
+    return {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: this.state.email,
+        password: this.state.password
+      }),
+    };
   }
 }
 
