@@ -1,17 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Text, Button } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, Button } from 'react-native';
+import { EventsList } from '../components/events-list';
 
 export default class Events extends React.Component {
   render() {
-    const {navigate} = this.props.navigation;
     return (
-      <View style={styles.container}>
-        <Text>Events</Text>
-        <Button
-          title="Detail"
-          onPress={() => navigate('DetailEvents')}
-        />
-      </View>
+        <EventsList>
+        </EventsList>
     );
   }
 }
