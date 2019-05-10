@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, AsyncStorage } from 'react-native';
 import { Button } from 'react-native-elements';
 import { LoginInput } from '../components/login-input';
 
+const baseURL = 'https://frontend-test.agendaedu.com/api';
+
 export default class Login extends React.Component {
 
   constructor(props) {
@@ -10,73 +12,94 @@ export default class Login extends React.Component {
     this.state = {
       email: '',
       password: '',
-      validateForm: false,
-      waiting: false,
+      loading: false,
+      message: ''
     }
   }
 
-  submitLogin() {
+  submitLogin = async () => {
     if (this.state.email.trim() == '' || this.state.password.trim() == '') {
-      this.setState({validateForm: true});
+      this.setState({message: 'E-mail e Senha são obrigórios'});
     } else {
-      this.setState({waiting: true});
-      fetch(this.getUri(), this.getRequestInfo()).then(response => {
-        this.setState({waiting: false});
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Não foi possível efetuar login")
-      }).then(token => {
-        AsyncStorage.setItem('token', token.token);
-        const {navigate} = this.props.navigation;
-        navigate('Events');
-      }).catch(err => {
-        console.warn(err);
-      });
+
+      this.setState({loading: true});
+      const response = await fetch(`${baseURL}/login`, this.getRequestInfo());
+      const data = await response.json();
+      this.setState({loading: false});
+
+      if(!data.token) {
+        this.setState({message: data.message});
+        return;
+      }
+
+      AsyncStorage.setItem('token', data.token);
+      const {navigate} = this.props.navigation;
+      navigate('Events');
     }
+  }
+
+  updateState = (item) => {
+    this.setState(item);
+    this.setState({message: ''});
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <View  style={styles.viewTitle}>
-          <Text style={styles.title}>
-            {'Faça seu login 🔑'}
-          </Text>
-        </View>
-        <View  style={styles.viewForm}>
-          <LoginInput
-            label='E-mail ou usuário'
-            icon='envelope'
-            editable={this.state.waiting}
-            onChangeText={text => this.setState({email: text})}
-            danger={this.state.validateForm && this.state.email.trim() === ''}>
-          </LoginInput>
-          <LoginInput 
-            label='Senha'
-            icon='eye-slash'
-            secureTextEntry={true}
-            onChangeText={text => this.setState({password: text})}
-            danger={this.state.validateForm && this.state.password.trim() === ''}>
-          </LoginInput>
-        </View>
-        <View  style={styles.viewButton}>
-          <Button
-            buttonStyle={styles.buttonEntrar}
-            title="Entrar"
-            loading={this.state.waiting}
-            onPress={(e) => this.submitLogin(e)}
-          />
-        </View>
+        {this.renderTitle()}
+        {this.renderForm()}
+        {this.renderButton()}
       </View>
     );
   }
 
-  getUri() {
-    return "https://frontend-test.agendaedu.com/api/login";
+  renderTitle = () => {
+    return (
+      <View  style={styles.viewTitle}>
+        <Text style={styles.title}>
+          {'Faça seu login 🔑'}
+        </Text>
+      </View>
+    );
   }
 
-  getRequestInfo() {
+  renderForm = () => {
+    return (
+      <View  style={styles.viewForm}>
+        <LoginInput
+          label='E-mail ou usuário'
+          icon='envelope'
+          editable={this.state.loading}
+          onChangeText={text => this.updateState({email: text})}
+          danger={this.state.message.trim() !== '' && this.state.email.trim() === ''}>
+        </LoginInput>
+        <LoginInput 
+          label='Senha'
+          icon='eye-slash'
+          editable={this.state.loading}
+          secureTextEntry={true}
+          onChangeText={text => this.updateState({password: text})}
+          danger={this.state.message.trim() !== '' && this.state.password.trim() === ''}>
+        </LoginInput>
+        <Text style={styles.danger}>{this.state.message}</Text>
+      </View>
+    );
+  }
+
+  renderButton = () => {
+    return (
+      <View  style={styles.viewButton}>
+        <Button
+          buttonStyle={styles.buttonEntrar}
+          title="Entrar"
+          loading={this.state.loading}
+          onPress={(e) => this.submitLogin(e)}
+        />
+      </View>
+    );
+  }
+
+  getRequestInfo = () => {
     return {
       method: 'POST',
       headers: {
@@ -109,6 +132,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     margin: 10,
+  },
+  danger: {
+    color: '#D32F2F',
+    textAlign: 'center',
+    marginTop: 20,
   },
   viewButton: {
     flex: 1,
