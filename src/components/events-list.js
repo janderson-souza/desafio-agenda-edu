@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, AsyncStorage } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, AsyncStorage, Image} from 'react-native';
 
 const baseURL = 'https://frontend-test.agendaedu.com/api';
 const perPage = 10;
@@ -35,7 +35,11 @@ class EventsList extends React.Component {
 
   renderItem = ({ item }) => (
     <View style={styles.listItem}>
-      <Text>{item.title}</Text>
+      <Image source={{uri: item.image}} style={styles.imageItem} />
+      <View>
+        <Text style={{color:'#999999', fontSize: 14, marginBottom: 10}}>EVENTOS</Text>
+        <Text style={{color: '#333333', fontSize: 16}}>{item.title}</Text>
+      </View>
     </View>
   );
   
@@ -55,7 +59,7 @@ class EventsList extends React.Component {
         contentContainerStyle={styles.list}
         data={this.state.data}
         renderItem={this.renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id.toString()}
         onEndReached={this.loadEvents}
         onEndReachedThreshold={0.1}
         ListFooterComponent={this.renderFooter}
@@ -82,10 +86,24 @@ const styles = StyleSheet.create({
   },
 
   listItem: {
-    backgroundColor: '#EEE',
-    marginTop: 20,
-    padding: 30,
+    marginBottom: 8,
+    height: 124,
+    backgroundColor: '#FFFFFF',
+    flex: 1,
+    borderRadius: 5,
+    padding: 16,
+    shadowColor: '#000000',
+    elevation: 2,
+    borderLeftColor: '#733DBE',
+    borderLeftWidth: 4,
+    flexDirection: 'row',
   },
+  imageItem: {
+    width: 66,
+    height: 92,
+    marginRight: 16,
+    borderRadius: 5,
+  }
 });
 
 export { EventsList };
