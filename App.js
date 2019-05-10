@@ -4,10 +4,24 @@ import Events from './src/screens/events';
 import DetailEvents from './src/screens/detail-event';
 
 const MainNavigator = createStackNavigator({
-  Login: {screen: Login},
-  Events: {screen: Events},
+  Login: {
+    screen: Login,
+    navigationOptions: {
+        header: null,
+    }    
+  },
+  Events: {
+    screen: Events,
+    navigationOptions: {
+      title: 'Eventos',
+      headerLeft: null,
+      headerTitleStyle: {
+        fontWeight: '300',
+      }
+    }
+  },
   DetailEvents: {screen: DetailEvents},
-}, {headerMode: 'none'});
+});
 
 const App = createAppContainer(MainNavigator);
 
