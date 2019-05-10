@@ -36,6 +36,7 @@ class LoginInput extends React.Component {
       const icon            = this.props.icon;
       const secureTextEntry = this.props.secureTextEntry;
       const onChangeText    = this.props.onChangeText;
+      const editable        = this.state.waiting;
 
       let color = this.state.color;
 
@@ -54,6 +55,7 @@ class LoginInput extends React.Component {
                 padding: 5,
                 borderColor: color
               }}
+              editable={editable}
               secureTextEntry={secureTextEntry}
               onBlur={ () => this.onBlur() }
               onFocus={ () => this.onFocus() }
@@ -77,10 +79,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: '300',
     fontSize: 16
-  },
-  input: {
-    
-  },  
+  }
 });
 
 export { LoginInput };
