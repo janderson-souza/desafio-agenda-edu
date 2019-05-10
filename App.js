@@ -20,7 +20,15 @@ const MainNavigator = createStackNavigator({
       }
     }
   },
-  DetailEvents: {screen: DetailEvents},
+  DetailEvents: {
+    screen: DetailEvents,
+    navigationOptions: {
+      title: 'Detalhes do evento',
+      headerTitleStyle: {
+        fontWeight: '300',
+      }
+    }    
+  },
 });
 
 const App = createAppContainer(MainNavigator);
